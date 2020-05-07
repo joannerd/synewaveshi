@@ -25,6 +25,7 @@ const App = () => {
 
   socket.on('user left', data => {
     console.log(`${data.username} left!`);
+    setUsers(data.currentUsers);
   });
 
   socket.on('disconnect', () => {
