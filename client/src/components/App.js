@@ -1,14 +1,17 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
+import Welcome from './Welcome';
 import Home from './Home';
+const SOCKET_IO_URL = 'http://localhost:3001';
 
 const App = () => {
   const [username, setUsername] = useState('');
+  const [currentUsers, setUsers] = useState([]);
 
-  const socket = io('http://localhost:3001', {
+  const socket = io(SOCKET_IO_URL, {
     path: '/socket.io',
   });
-  
+
   const updateUsername = (name) => {
     setUsername(name);
     socket.open();
@@ -17,6 +20,7 @@ const App = () => {
 
   socket.on('user joined', data => {
     console.log(`${data.username} joined!`);
+    setUsers(data.currentUsers);
   })
 
   socket.on('user left', data => {
@@ -30,19 +34,20 @@ const App = () => {
 
   socket.on('reconnect', () => {
     console.log(`user has been reconnected!`);
-    if (username) {
-      socket.emit('add user', username);
-    }
+    if (username) socket.emit('add user', username);
   });
 
+  useEffect(() => {
+    console.log(currentUsers)
+  });
 
   return (
     <>
       <h1>Syne Chat</h1>
       {!username ? (
-        <Home updateUsername={updateUsername} />
+        <Welcome updateUsername={updateUsername} />
       ) : (
-        <h1>Welcome, {username}!</h1>
+        <Home username={username} currentUsers={currentUsers} />
       )}
     </>
   );
