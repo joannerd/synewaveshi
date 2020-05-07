@@ -5,20 +5,24 @@ const Home = ({ updateUsername }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateUsername(username);
+    if (username) {
+      updateUsername(username);
+    } else {
+      alert('Please enter a valid alphabetical name.')
+    }
   };
 
   const changeUsername = (e) => setUsername(e.target.value);
 
   return (
     <>
-      <h1>synes wave hi</h1>
+      <h1>syne waves hi</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
           value={username}
           onChange={changeUsername}
-          placeholder="Enter your name to wave hi back."
+          placeholder="Enter your name to wave back."
         />
       </form>
     </>

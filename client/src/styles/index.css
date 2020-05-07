@@ -1,11 +1,17 @@
 body {
+  font-family: 'Jost', sans-serif;
+  text-align: center;
+  background-color: #70a1ff;
+  background-image: linear-gradient(315deg, #4baeff 0%, #ffdfdf 74%);
+}
+
+body, #welcome {
   height: 100vh;
   width: 100vw;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: 'Jost', sans-serif;
-  text-align: center;
 }
 
 h1 {
@@ -18,10 +24,14 @@ h2 {
 }
 
 h3 {
+  font-size: 30px;
+}
+
+h4 {
   font-size: 20px;
 }
 
-h3, span {
+h4, span {
   font-family: 'Roboto', sans-serif;
 }
 
@@ -45,4 +55,16 @@ input {
 
 :focus {
   outline: none;
+}
+
+#syne {
+  height: 20vh;
+  width: 30vw;
+  line-height: 20vh;
+  border-radius: 10px;
+}
+
+.current-users {
+  padding: 20px;
+  min-height: 10vh;
 }

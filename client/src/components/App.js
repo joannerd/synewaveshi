@@ -7,7 +7,7 @@ const SOCKET_IO_URL = 'http://localhost:3001';
 const App = () => {
   const [username, setUsername] = useState('');
   const [currentUsers, setCurrentUsers] = useState([]);
-  
+
   const socket = io(SOCKET_IO_URL, {
     path: '/socket.io',
   });
