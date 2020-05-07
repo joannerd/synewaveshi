@@ -38,8 +38,8 @@ io.on('connect', socket => {
     if (newUser) return;
 
     socket.username = username;
-    currentUsers.push(username)
     numUsers += 1;
+    currentUsers.push({ id: numUsers, username })
     newUser = true;
 
     console.log(`
@@ -56,13 +56,22 @@ io.on('connect', socket => {
   });
 
   socket.on('disconnect', () => {
-    if (newUser) {
-      numUsers -= 1;
-      currentUsers = currentUsers.filter(user => user !== socket.username);
-    }
+    if (!newUser) return;
+
+    numUsers -= 1;
+    console.log(`${socket.username} disconnected`);
+    currentUsers = currentUsers.filter(user => user.username !== socket.username);
+    
+    socket.username = undefined;
+    console.log(`
+      New user: ${socket.username}
+      Current users: ${currentUsers}
+      Num users: ${numUsers}
+    `);
 
     socket.broadcast.emit('user left', {
       username: socket.username,
+      currentUsers,
       numUsers,
     });
   });

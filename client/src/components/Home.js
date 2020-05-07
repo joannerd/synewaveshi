@@ -6,7 +6,7 @@ const Home = ({ username, currentUsers }) => (
     <h2>Current Users:</h2>
     <ul>
       {currentUsers.map((user) => (
-        <li key={user}>{user}</li>
+        <li key={user.id}>{user.username}</li>
       ))}
     </ul>
   </>
