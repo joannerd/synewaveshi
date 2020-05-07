@@ -1,0 +1,48 @@
+body {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'Jost', sans-serif;
+  text-align: center;
+}
+
+h1 {
+  font-size: 80px;
+}
+
+h2 {
+  font-size: 70px;
+  margin-bottom: 25px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+h3, span {
+  font-family: 'Roboto', sans-serif;
+}
+
+span {
+  font-size: 15px;
+}
+
+input {
+  margin: 25px;
+  padding: 10px 25px 10px 25px;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  width: 225px;
+  box-sizing: border-box;
+}
+
+::placeholder {
+  text-align: center;
+  color: rgb(175, 175, 175);
+}
+
+:focus {
+  outline: none;
+}

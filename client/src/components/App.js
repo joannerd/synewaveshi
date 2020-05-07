@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
-import Welcome from './Welcome';
 import Home from './Home';
+import Welcome from './Welcome';
 const SOCKET_IO_URL = 'http://localhost:3001';
 
 const App = () => {
@@ -38,16 +38,8 @@ const App = () => {
     });
   });
 
-  return (
-    <>
-      <h1>Syne Chat</h1>
-      {!username ? (
-        <Welcome updateUsername={updateUsername} />
-      ) : (
-        <Home username={username} currentUsers={currentUsers} />
-      )}
-    </>
-  );
+  if (!username) return <Home updateUsername={updateUsername} />;
+  return <Welcome username={username} currentUsers={currentUsers} />;
 };
 
 export default App;
