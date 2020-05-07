@@ -22,6 +22,7 @@ app.get('*', (req, res) => {
 });
 
 let numUsers = 0;
+let currentUsers = [];
 
 io.on('connect', socket => {
   let newUser = false;
@@ -36,20 +37,29 @@ io.on('connect', socket => {
   socket.on('add user', username => {
     if (newUser) return;
 
-    console.log(`Adding new user: ${username}`);
     socket.username = username;
+    currentUsers.push(username)
     numUsers += 1;
-    console.log(numUsers)
     newUser = true;
+
+    console.log(`
+      New user: ${username}
+      Num users: ${numUsers}
+      Current users: ${currentUsers}
+    `);
 
     socket.broadcast.emit('user joined', {
       username: socket.username,
+      currentUsers,
       numUsers,
     });
   });
 
   socket.on('disconnect', () => {
-    if (newUser) numUsers -= 1;
+    if (newUser) {
+      numUsers -= 1;
+      currentUsers = currentUsers.filter(user => user !== socket.username);
+    }
 
     socket.broadcast.emit('user left', {
       username: socket.username,
