@@ -39,9 +39,10 @@ io.on('connect', socket => {
     console.log(`Adding new user: ${username}`);
     socket.username = username;
     numUsers += 1;
+    console.log(numUsers)
     newUser = true;
 
-    socket.broadcast.emit(`${username} joined`, {
+    socket.broadcast.emit('user joined', {
       username: socket.username,
       numUsers,
     });
@@ -50,7 +51,7 @@ io.on('connect', socket => {
   socket.on('disconnect', () => {
     if (newUser) numUsers -= 1;
 
-    socket.broadcast.emit(`${socket.username} left`, {
+    socket.broadcast.emit('user left', {
       username: socket.username,
       numUsers,
     });
