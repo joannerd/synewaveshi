@@ -58,8 +58,8 @@ input {
 }
 
 #syne {
-  height: 20vh;
-  width: 30vw;
+  min-height: 20vh;
+  min-width: 30vw;
   line-height: 20vh;
   border-radius: 10px;
 }
