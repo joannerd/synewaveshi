@@ -49,6 +49,11 @@ const Welcome = ({ username, currentUsers, socket }) => {
   };
 
   useEffect(() => {
+    socket.on('note added', (data) => {
+      console.log(`Added new note: ${data.note}!`);
+      synth.triggerAttackRelease(data.note, '10');
+    });
+
     recognition.onresult = (e) => {
       const note = e.results[0][0].transcript;
 
@@ -63,18 +68,20 @@ const Welcome = ({ username, currentUsers, socket }) => {
 
         if (note.split(' ').length !== 1) {
           const noteParts = note.split(' ');
-          noteToPlay =
-            noteParts[1] === 'sharp'
-              ? noteParts[0] + '#'
-              : flatToSharp[note.toLowerCase()];
+          noteToPlay = (noteParts[1] === 'sharp')
+            ? noteParts[0] + '#'
+            : flatToSharp[note.toLowerCase()];
         }
       } else {
         ref.current.style.backgroundColor = note;
       }
 
-      console.log(noteToPlay + noteRegister);
-      synth.triggerAttackRelease(noteToPlay + noteRegister, '10');
-      console.log(synth);
+      const fullNote = noteToPlay + noteRegister;
+      console.log(fullNote);
+      socket.emit('add note', fullNote);
+
+      synth.triggerAttackRelease(fullNote, '10');
+      // console.log(synth);
 
       console.log('Confidence: ' + e.results[0][0].confidence);
     };
@@ -89,6 +96,7 @@ const Welcome = ({ username, currentUsers, socket }) => {
       ref.current.textContent = 'Error occurred in recognition: ' + e.error;
     };
   }, [
+    socket,
     recognition,
     syneText,
     flatToSharp,
