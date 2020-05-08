@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
 const { createServer } = require('http');
-const Server = require('socket.io');
+const socketIO = require('socket.io');
 
 require('dotenv').config();
 
@@ -10,16 +10,17 @@ const { port } = require('./config');
 
 const app = express();
 const server = createServer(app);
-const io = Server(server);
+const io = socketIO(server);
 
-server.listen(port, () => console.log(`Listening on http://localhost:${port}`));
-
-app.use(morgan('dev'));
-app.use(express.static(path.join(__dirname, '/client/build')));
+app
+  .use(morgan('dev'))
+  .use(express.static(path.join(__dirname, '/client/build')))
+  .listen(port, () => console.log(`Listening on ${port}`));
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname + 'client/build/index.html'));
+  res.sendFile(path.join(__dirname + '/client/build/index.html'));
 });
+
 
 let numUsers = 0;
 let currentUsers = [];
