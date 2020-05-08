@@ -23,14 +23,16 @@ app.get('*', (req, res) => {
 
 let numUsers = 0;
 let currentUsers = [];
+let currentNotes = [];
 
 io.on('connect', socket => {
   let newUser = false;
 
-  socket.on('new message', data => {
-    console.log(`Broadcasting new message: ${data}`);
-    socket.broadcast.emit('new message', {
-      message: data
+  socket.on('new note', note => {
+    console.log(`Broadcasting new note: ${note}`);
+    currentNotes.push(note);
+    socket.broadcast.emit('new note', {
+      currentNotes,
     });
   });
 
