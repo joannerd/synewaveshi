@@ -1,27 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Tone from 'tone';
+import CurrentUsersList from './CurrentUsersList';
 
 const SYNE_IS_LISTENING = 'Syne is listening...';
 
-const Welcome = ({ username, currentUsers }) => {
+const Welcome = ({ username, currentUsers, socket }) => {
   const [syneText, setSyneText] = useState(SYNE_IS_LISTENING);
   const [noteRegister, setNoteRegister] = useState(1);
 
   const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-  const flatNotes = naturalNotes.map(note => note + ' flat');
-  const sharpNotes = naturalNotes.map(note => note + ' sharp');
+  const flatNotes = naturalNotes.map((note) => note + ' flat');
+  const sharpNotes = naturalNotes.map((note) => note + ' sharp');
   const notes = naturalNotes.concat(flatNotes, sharpNotes).sort();
-  
+
   const flatToSharp = {};
   naturalNotes.forEach((note, i) => {
     const key = note + ' flat';
-    const value = (i === 0)
-      ? 'g#'
-      : naturalNotes[i-1] + '#';
+    const value = i === 0 ? 'g#' : naturalNotes[i - 1] + '#';
     flatToSharp[key] = value;
   });
 
-  const grammar = 'grammar notes; public <note> = ' + notes.join(' | ') + ' ;'
+  const grammar = 'grammar notes; public <note> = ' + notes.join(' | ') + ' ;';
   const speechRecognitionList = new window.webkitSpeechGrammarList();
   speechRecognitionList.addFromString(grammar, 1);
 
@@ -43,11 +42,11 @@ const Welcome = ({ username, currentUsers }) => {
     } else {
       setSyneText(SYNE_IS_LISTENING);
     }
-  }
+  };
 
   const getRandomInt = (max) => {
     return Math.floor(Math.random() * Math.floor(max));
-  }
+  };
 
   useEffect(() => {
     recognition.onresult = (e) => {
@@ -100,7 +99,7 @@ const Welcome = ({ username, currentUsers }) => {
     notes,
     synth,
   ]);
-  
+
   const changeNoteRegister = (e) => setNoteRegister(e.target.value);
   const users = currentUsers.filter((user) => user.username !== username);
 
@@ -110,19 +109,7 @@ const Welcome = ({ username, currentUsers }) => {
       <h3 id="wave">Click to begin waving.</h3>
       <div className="current-users">
         <h4>You are currently waving sines with...</h4>
-        {users.map(({ id, username }, i) => {
-          let name = username;
-
-          if (users.length === 2 && i === 1) {
-            name = ` and ${username}.`;
-          } else if (i !== 0) {
-            i < users.length - 1
-              ? (name = `, ${username}`)
-              : (name = `, and ${username}.`);
-          }
-
-          return <span key={id}>{name}</span>;
-        })}
+        <CurrentUsersList users={users} />
       </div>
       <h3>Low or High</h3>
       <h4>Current selected note register: {noteRegister}</h4>
@@ -138,6 +125,6 @@ const Welcome = ({ username, currentUsers }) => {
       <div ref={ref} id="syne"></div>
     </div>
   );
-}
+};
 
 export default Welcome;
