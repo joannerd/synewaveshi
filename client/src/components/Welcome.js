@@ -6,7 +6,7 @@ const SYNE_IS_LISTENING = 'Syne is listening...';
 
 const Welcome = ({ username, currentUsers, socket }) => {
   const [syneText, setSyneText] = useState(SYNE_IS_LISTENING);
-  const [noteRegister, setNoteRegister] = useState(1);
+  const [noteRegister, setNoteRegister] = useState(3);
 
   const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
   const flatNotes = naturalNotes.map((note) => note + ' flat');
