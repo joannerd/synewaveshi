@@ -35,7 +35,6 @@ const Welcome = ({ username, currentUsers }) => {
 
   const ref = useRef();
   const synth = new Tone.Synth().toMaster();
-  const osc = new Tone.OmniOscillator();
 
   const handleClick = () => {
     if (syneText === SYNE_IS_LISTENING) {
@@ -77,9 +76,6 @@ const Welcome = ({ username, currentUsers }) => {
       console.log(noteToPlay + noteRegister);
       synth.triggerAttackRelease(noteToPlay + noteRegister, '10');
       console.log(synth);
-      // synth.triggerAttackRelease('C#1', '10');
-      // osc.frequency.value = noteToPlay + noteRegister;
-      // osc.start().stop('10');
 
       console.log('Confidence: ' + e.results[0][0].confidence);
     };
@@ -103,7 +99,6 @@ const Welcome = ({ username, currentUsers }) => {
     noteRegister,
     notes,
     synth,
-    osc,
   ]);
   
   const changeNoteRegister = (e) => setNoteRegister(e.target.value);
