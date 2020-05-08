@@ -1,16 +1,25 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Synth } from 'tone';
+import Tone from 'tone';
 
 const Welcome = ({ username, currentUsers }) => {
   const [isListening, setIsListening] = useState(true);
   const [noteRegister, setNoteRegister] = useState(1);
 
-  const naturalNotes = ['c', 'd', 'e', 'f', 'g', 'a', 'b'];
+  const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
   const flatNotes = naturalNotes.map(note => note + ' flat');
   const sharpNotes = naturalNotes.map(note => note + ' sharp');
   const notes = naturalNotes.concat(flatNotes, sharpNotes).sort();
+  
+  const flatToSharp = {};
+  naturalNotes.forEach((note, i) => {
+    const key = note + ' flat';
+    const value = (i === 0)
+      ? 'g#'
+      : naturalNotes[i-1] + '#';
+    flatToSharp[key] = value;
+  });
 
-  const grammar = '#JSGF V1.0; grammar notes; public <note> = ' + notes.join(' | ') + ' ;'
+  const grammar = 'grammar notes; public <note> = ' + notes.join(' | ') + ' ;'
   const speechRecognitionList = new window.webkitSpeechGrammarList();
   speechRecognitionList.addFromString(grammar, 1);
 
@@ -23,7 +32,8 @@ const Welcome = ({ username, currentUsers }) => {
   recognition.start();
 
   const ref = useRef();
-  const synth = new Synth().toMaster();
+  const synth = new Tone.Synth().toMaster();
+  const osc = new Tone.OmniOscillator();
 
   const handleClick = () => {
     ref.current.textContent = 'Syne is listening...';
@@ -35,41 +45,67 @@ const Welcome = ({ username, currentUsers }) => {
     }
   }
 
+  const getRandomInt = (max) => {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
+
   useEffect(() => {
-    recognition.onresult = e => {
+    recognition.onresult = (e) => {
       const note = e.results[0][0].transcript;
-      ref.current.textContent = 'Result received: ' + note + '. \n Click to speak again.';
-      ref.current.style.backgroundColor = note;
-      let noteToPlay = note + noteRegister;
-      if (notes.includes(note)) {
-        if (note.split(' ').length === 1) {
-          noteToPlay = note + noteRegister;
-        } else {
+
+      ref.current.textContent =
+        'Received note: ' + note + '. \n Click to speak again.';
+      
+      const randomIdx = getRandomInt(7);
+      let noteToPlay = naturalNotes[randomIdx];
+      
+      if (notes.includes(note.toLowerCase())) {
+        noteToPlay = note;
+
+        if (note.split(' ').length !== 1) {
           const noteParts = note.split(' ');
-          if (noteParts[1] === 'sharp') {
-            noteToPlay = note + '#' + noteRegister;
-          }
+          noteToPlay =
+            noteParts[1] === 'sharp'
+              ? noteParts[0] + '#'
+              : flatToSharp[note.toLowerCase()];
         }
+      } else {
+        ref.current.style.backgroundColor = note;
       }
-       synth.triggerAttackRelease(noteToPlay, '1m');
-      console.log(e.results)
+
+      console.log(noteToPlay + noteRegister)
+      synth.triggerAttackRelease(noteToPlay+noteRegister, '10');
+      console.log(synth)
+      // synth.triggerAttackRelease('C#1', '10');
+      // osc.frequency.value = noteToPlay + noteRegister;
+      // osc.start().stop('10');
+
       console.log('Confidence: ' + e.results[0][0].confidence);
-    }
+    };
 
     recognition.onspeechend = () => {
       recognition.stop();
-    }
+    };
 
-    recognition.onnomatch = e => {
-      ref.current.textContent = "Syne didn't recognise that note.";
-    }
+    recognition.onnomatch = (e) => {
+      ref.current.textContent = "Syne didn't recognize that note.";
+    };
 
-    recognition.onerror = e => {
+    recognition.onerror = (e) => {
       ref.current.textContent = 'Error occurred in recognition: ' + e.error;
-    }
-  }, [recognition, isListening]);
+    };
+  }, [
+    recognition,
+    isListening,
+    flatToSharp,
+    naturalNotes,
+    noteRegister,
+    notes,
+    synth,
+    osc
+  ]);
   
-  const changeNoteRegister = e => setNoteRegister(e.target.value);
+  const changeNoteRegister = (e) => setNoteRegister(e.target.value);
   const users = currentUsers.filter((user) => user.username !== username);
 
   return (
