@@ -27,10 +27,10 @@ let currentUsers = [];
 io.on('connect', socket => {
   let newUser = false;
 
-  socket.on('new message', data => {
-    console.log(`Broadcasting new message: ${data}`);
-    socket.broadcast.emit('new message', {
-      message: data
+  socket.on('add note', note => {
+    console.log(`Broadcasting new note: ${note}`);
+    socket.broadcast.emit('note added', {
+      note,
     });
   });
 

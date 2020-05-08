@@ -39,7 +39,7 @@ const App = () => {
   });
 
   if (!username) return <Home updateUsername={updateUsername} />;
-  return <Welcome username={username} currentUsers={currentUsers} />;
+  return <Welcome username={username} currentUsers={currentUsers} socket={socket} />;
 };
 
 export default App;
