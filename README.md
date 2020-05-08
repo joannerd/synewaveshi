@@ -1,1 +1,1 @@
-# Syneswave
+# Synewaveshi
