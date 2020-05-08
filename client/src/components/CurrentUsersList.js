@@ -1,7 +1,8 @@
 import React from 'react';
 
 const CurrentUsersList = ({ users }) => (
-  <>
+  <div className="current-users">
+    <h4>You are currently waving sines with...</h4>
     {users.map(({ id, username }, i) => {
       let name = username;
 
@@ -15,7 +16,7 @@ const CurrentUsersList = ({ users }) => (
 
       return <span key={id}>{name}</span>;
     })}
-  </>
+  </div>
 );
 
 export default CurrentUsersList;

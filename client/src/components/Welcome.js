@@ -79,9 +79,7 @@ const Welcome = ({ username, currentUsers, socket }) => {
       console.log('Confidence: ' + e.results[0][0].confidence);
     };
 
-    recognition.onspeechend = () => {
-      recognition.stop();
-    };
+    recognition.onspeechend = () => recognition.stop();
 
     recognition.onnomatch = (e) => {
       ref.current.textContent = "Syne didn't recognize that note.";
@@ -107,10 +105,8 @@ const Welcome = ({ username, currentUsers, socket }) => {
     <div id="welcome" onClick={handleClick}>
       <h2>Welcome, {username}!</h2>
       <h3 id="wave">Click to begin waving.</h3>
-      <div className="current-users">
-        <h4>You are currently waving sines with...</h4>
-        <CurrentUsersList users={users} />
-      </div>
+      <CurrentUsersList users={users} />
+
       <h3>Low or High</h3>
       <h4>Current selected note register: {noteRegister}</h4>
       <input
@@ -122,7 +118,7 @@ const Welcome = ({ username, currentUsers, socket }) => {
       />
 
       {syneText}
-      <div ref={ref} id="syne"></div>
+      <div ref={ref} id="syne" />
     </div>
   );
 };
