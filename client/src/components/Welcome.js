@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Tone from 'tone';
 
+const SYNE_IS_LISTENING = 'Syne is listening...';
+
 const Welcome = ({ username, currentUsers }) => {
-  const [isListening, setIsListening] = useState(true);
+  const [syneText, setSyneText] = useState(SYNE_IS_LISTENING);
   const [noteRegister, setNoteRegister] = useState(1);
 
   const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
@@ -36,12 +38,11 @@ const Welcome = ({ username, currentUsers }) => {
   const osc = new Tone.OmniOscillator();
 
   const handleClick = () => {
-    ref.current.textContent = 'Syne is listening...';
-    if (isListening) {
+    if (syneText === SYNE_IS_LISTENING) {
       recognition.stop();
-      setIsListening(false);
+      setSyneText('Say another command');
     } else {
-      setIsListening(true);
+      setSyneText(SYNE_IS_LISTENING);
     }
   }
 
@@ -54,11 +55,11 @@ const Welcome = ({ username, currentUsers }) => {
       const note = e.results[0][0].transcript;
 
       ref.current.textContent =
-        'Received note: ' + note + '. \n Click to speak again.';
-      
+        'Received input: ' + note + '. \n Click to speak again.';
+
       const randomIdx = getRandomInt(7);
       let noteToPlay = naturalNotes[randomIdx];
-      
+
       if (notes.includes(note.toLowerCase())) {
         noteToPlay = note;
 
@@ -73,9 +74,9 @@ const Welcome = ({ username, currentUsers }) => {
         ref.current.style.backgroundColor = note;
       }
 
-      console.log(noteToPlay + noteRegister)
-      synth.triggerAttackRelease(noteToPlay+noteRegister, '10');
-      console.log(synth)
+      console.log(noteToPlay + noteRegister);
+      synth.triggerAttackRelease(noteToPlay + noteRegister, '10');
+      console.log(synth);
       // synth.triggerAttackRelease('C#1', '10');
       // osc.frequency.value = noteToPlay + noteRegister;
       // osc.start().stop('10');
@@ -96,33 +97,33 @@ const Welcome = ({ username, currentUsers }) => {
     };
   }, [
     recognition,
-    isListening,
+    syneText,
     flatToSharp,
     naturalNotes,
     noteRegister,
     notes,
     synth,
-    osc
+    osc,
   ]);
   
   const changeNoteRegister = (e) => setNoteRegister(e.target.value);
   const users = currentUsers.filter((user) => user.username !== username);
 
   return (
-    <div id="welcome" onClick={handleClick} >
+    <div id="welcome" onClick={handleClick}>
       <h2>Welcome, {username}!</h2>
       <h3 id="wave">Click to begin waving.</h3>
       <div className="current-users">
         <h4>You are currently waving sines with...</h4>
-        {users.map(({id, username}, i) => {
+        {users.map(({ id, username }, i) => {
           let name = username;
 
           if (users.length === 2 && i === 1) {
             name = ` and ${username}.`;
           } else if (i !== 0) {
             i < users.length - 1
-              ? name = `, ${username}`
-              : name = `, and ${username}.`;
+              ? (name = `, ${username}`)
+              : (name = `, and ${username}.`);
           }
 
           return <span key={id}>{name}</span>;
@@ -130,8 +131,15 @@ const Welcome = ({ username, currentUsers }) => {
       </div>
       <h3>Low or High</h3>
       <h4>Current selected note register: {noteRegister}</h4>
-      <input type="range" min="1" max="7" value={noteRegister} onChange={changeNoteRegister} />
-      
+      <input
+        type="range"
+        min="1"
+        max="7"
+        value={noteRegister}
+        onChange={changeNoteRegister}
+      />
+
+      {syneText}
       <div ref={ref} id="syne"></div>
     </div>
   );
