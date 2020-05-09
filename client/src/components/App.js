@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import Home from './Home';
 import Welcome from './Welcome';
-import { socketHost, socketPath, socketPort } from '../config';
+import { socketUrl } from '../config';
 
 const App = () => {
   const [username, setUsername] = useState('');
   const [currentUsers, setCurrentUsers] = useState([]);
 
-  const socket = io(`http://${socketHost}:${socketPort}`, {
-    path: socketPath,
+  const socket = io(socketUrl, {
+    path: '/socket.io',
   });
 
   const updateUsername = (name) => {
@@ -36,7 +36,7 @@ const App = () => {
       // console.log(`user has been reconnected!`);
       if (username) socket.emit('add user', username);
     });
-  });
+  }, [socket, username]);
 
   if (!username) return <Home updateUsername={updateUsername} />;
   return <Welcome username={username} currentUsers={currentUsers} socket={socket} />;

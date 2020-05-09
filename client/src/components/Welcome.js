@@ -3,22 +3,16 @@ import Tone from 'tone';
 import CurrentUsersList from './CurrentUsersList';
 
 const SYNE_IS_LISTENING = 'Syne is listening...';
+const CLICK_TO_SPEAK_AGAIN = 'Click to speak again.'
 
 const Welcome = ({ username, currentUsers, socket }) => {
-  const [syneText, setSyneText] = useState(SYNE_IS_LISTENING);
-  const [noteRegister, setNoteRegister] = useState(1);
+  const [syneText, setSyneText] = useState('Click and say a note to begin.');
+  const [noteRegister, setNoteRegister] = useState(3);
 
   const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
   const flatNotes = naturalNotes.map((note) => note + ' flat');
   const sharpNotes = naturalNotes.map((note) => note + ' sharp');
   const notes = naturalNotes.concat(flatNotes, sharpNotes).sort();
-
-  const flatToSharp = {};
-  naturalNotes.forEach((note, i) => {
-    const key = note + ' flat';
-    const value = i === 0 ? 'g#' : naturalNotes[i - 1] + '#';
-    flatToSharp[key] = value;
-  });
 
   const grammar = 'grammar notes; public <note> = ' + notes.join(' | ') + ' ;';
   const speechRecognitionList = new window.webkitSpeechGrammarList();
@@ -30,47 +24,61 @@ const Welcome = ({ username, currentUsers, socket }) => {
   recognition.lang = 'en-US';
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-  recognition.start();
 
   const ref = useRef();
   const synth = new Tone.Synth().toMaster();
 
   const handleClick = () => {
-    if (syneText === SYNE_IS_LISTENING) {
-      recognition.stop();
-      setSyneText('Say another command');
-    } else {
-      setSyneText(SYNE_IS_LISTENING);
-    }
+    window.navigator.permissions.query({ name: 'microphone' })
+      .then(res => {
+        if (res.state === 'granted') {
+          setSyneText(SYNE_IS_LISTENING);
+        } else {
+          recognition.stop();
+          setSyneText('Please enable microphone access.');
+        }
+      });
   };
 
+  const changeNoteRegister = (e) => setNoteRegister(e.target.value);
+  
   const getRandomInt = (max) => {
     return Math.floor(Math.random() * Math.floor(max));
   };
 
   useEffect(() => {
+    recognition.start();
+    
     socket.on('note added', (data) => {
       // console.log(`Added new note: ${data.note}!`);
       synth.triggerAttackRelease(data.note, '10');
     });
 
     recognition.onresult = (e) => {
-      const note = e.results[0][0].transcript;
+      const note = e.results[0][0].transcript.toLowerCase();
 
-      ref.current.textContent =
-        'Received input: ' + note + '. \n Click to speak again.';
+      setSyneText(SYNE_IS_LISTENING);
+      ref.current.textContent = 'Received input: ' + note.toUpperCase();
 
       const randomIdx = getRandomInt(7);
       let noteToPlay = naturalNotes[randomIdx];
 
-      if (notes.includes(note.toLowerCase())) {
+      if (notes.includes(note)) {
         noteToPlay = note;
 
         if (note.split(' ').length !== 1) {
           const noteParts = note.split(' ');
+
+          const flatToSharp = {};
+          naturalNotes.forEach((note, i) => {
+            const key = note + ' flat';
+            const value = i === 0 ? 'g#' : naturalNotes[i - 1] + '#';
+            flatToSharp[key] = value;
+          });
+
           noteToPlay = (noteParts[1] === 'sharp')
             ? noteParts[0] + '#'
-            : flatToSharp[note.toLowerCase()];
+            : flatToSharp[note];
         }
       } else {
         ref.current.style.backgroundColor = note;
@@ -86,27 +94,28 @@ const Welcome = ({ username, currentUsers, socket }) => {
       // console.log('Confidence: ' + e.results[0][0].confidence);
     };
 
-    recognition.onspeechend = () => recognition.stop();
+    recognition.onspeechend = () => {
+      setSyneText(CLICK_TO_SPEAK_AGAIN);
+    }
 
     recognition.onnomatch = (e) => {
       ref.current.textContent = "Syne didn't recognize that note.";
     };
 
     recognition.onerror = (e) => {
-      ref.current.textContent = 'Error occurred in recognition: ' + e.error;
+      if (e.error !== 'aborted')
+        ref.current.textContent = 'Error occurred in recognition: ' + e.error;
     };
   }, [
+    noteRegister,
     socket,
     recognition,
-    syneText,
-    flatToSharp,
-    naturalNotes,
-    noteRegister,
-    notes,
     synth,
+    syneText,
+    naturalNotes,
+    notes,
   ]);
 
-  const changeNoteRegister = (e) => setNoteRegister(e.target.value);
   const users = currentUsers.filter((user) => user.username !== username);
 
   return (
