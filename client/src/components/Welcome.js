@@ -32,7 +32,6 @@ const Welcome = ({ username, currentUsers, socket }) => {
     window.navigator.permissions.query({ name: 'microphone' })
       .then(res => {
         if (res.state === 'granted') {
-          recognition.start();
           setSyneText(SYNE_IS_LISTENING);
         } else {
           recognition.stop();
@@ -48,6 +47,8 @@ const Welcome = ({ username, currentUsers, socket }) => {
   };
 
   useEffect(() => {
+    recognition.start();
+    
     socket.on('note added', (data) => {
       console.log(`Added new note: ${data.note}!`);
       synth.triggerAttackRelease(data.note, '10');
