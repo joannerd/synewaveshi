@@ -1,15 +1,17 @@
 const express = require('express');
 const app = express();
-const server = require('http').Server(app);
+const http = require('http');
 const path = require('path');
 const morgan = require('morgan');
-const io = require('socket.io')(server);
+const socketIO = require('socket.io');
 
-// const io = socketIO(server, {
-//   serveClient: true,
-// });
+const server = http.Server(app)
 
-server.listen(80, () => console.log('Listening at port 80.'));
+const io = socketIO(server, {
+  serveClient: true,
+});
+
+server.listen(3001, () => console.log('Listening at port 3001.'));
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, '/client/build')));

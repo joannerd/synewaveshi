@@ -2,15 +2,10 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import Home from './Home';
 import Welcome from './Welcome';
-// import { socketUrl } from '../config';
 
 const App = () => {
   const [username, setUsername] = useState('');
   const [currentUsers, setCurrentUsers] = useState([]);
-
-  // const socket = io(socketUrl, {
-  //   path: '/socket',
-  // });
 
   const socket = io('https://synewaveshi.herokuapp.com/');
 
