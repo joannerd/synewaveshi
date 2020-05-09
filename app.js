@@ -4,15 +4,17 @@ const morgan = require('morgan');
 const { createServer } = require('http');
 const socketIO = require('socket.io');
 
-require('dotenv').config();
+// require('dotenv').config();
 
-const { port } = require('./config');
+// const { port } = require('./config');
 
 const app = express();
 const server = createServer(app);
 const io = socketIO(server, {
   serveClient: true,
 });
+
+server.listen(3001, () => console.log(`Listening on port 3001`));
 
 app.use(morgan('dev'));
 
@@ -26,7 +28,6 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build/index.html'));
 });
 
-app.listen(port, () => console.log(`Listening on ${port}`));
 
 let numUsers = 0;
 let currentUsers = [];
@@ -35,7 +36,7 @@ io.on('connect', (socket) => {
   let newUser = false;
 
   socket.on('add note', (note) => {
-    console.log(`Broadcasting new note: ${note}`);
+    // console.log(`Broadcasting new note: ${note}`);
     socket.broadcast.emit('note added', {
       note,
     });
@@ -66,7 +67,7 @@ io.on('connect', (socket) => {
     if (!newUser) return;
 
     numUsers -= 1;
-    console.log(`${socket.username} disconnected`);
+    // console.log(`${socket.username} disconnected`);
     currentUsers = currentUsers.filter(
       (user) => user.username !== socket.username
     );

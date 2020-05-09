@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import Home from './Home';
 import Welcome from './Welcome';
-import { socketUrl } from '../config';
+// import { socketUrl } from '../config';
 
 const App = () => {
   const [username, setUsername] = useState('');
