@@ -19,21 +19,21 @@ const App = () => {
 
   useEffect(() => {
     socket.on('user joined', data => {
-      console.log(`${data.username} joined!`);
+      // console.log(`${data.username} joined!`);
       setCurrentUsers(data.currentUsers);
     })
 
     socket.on('user left', data => {
-      console.log('user left!');
+      // console.log('user left!');
       setCurrentUsers(data.currentUsers);
     });
 
     socket.on('disconnect', () => {
-      console.log(`user has disconnected.`);
+      // console.log(`user has disconnected.`);
     });
 
     socket.on('reconnect', () => {
-      console.log(`user has been reconnected!`);
+      // console.log(`user has been reconnected!`);
       if (username) socket.emit('add user', username);
     });
   }, [socket, username]);

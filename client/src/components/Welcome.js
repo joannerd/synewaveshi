@@ -50,7 +50,7 @@ const Welcome = ({ username, currentUsers, socket }) => {
     recognition.start();
     
     socket.on('note added', (data) => {
-      console.log(`Added new note: ${data.note}!`);
+      // console.log(`Added new note: ${data.note}!`);
       synth.triggerAttackRelease(data.note, '10');
     });
 
@@ -85,13 +85,13 @@ const Welcome = ({ username, currentUsers, socket }) => {
       }
 
       const fullNote = noteToPlay + noteRegister;
-      console.log(fullNote);
+      // console.log(fullNote);
       socket.emit('add note', fullNote);
 
       synth.triggerAttackRelease(fullNote, '10');
       // console.log(synth);
 
-      console.log('Confidence: ' + e.results[0][0].confidence);
+      // console.log('Confidence: ' + e.results[0][0].confidence);
     };
 
     recognition.onspeechend = () => {
