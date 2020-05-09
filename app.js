@@ -4,9 +4,9 @@ const morgan = require('morgan');
 const { createServer } = require('http');
 const socketIO = require('socket.io');
 
-// require('dotenv').config();
+require('dotenv').config();
 
-// const { port } = require('./config');
+const { port } = require('./config');
 
 const app = express();
 const server = createServer(app);
@@ -26,7 +26,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build/index.html'));
 });
 
-// app.listen(port, () => console.log(`Listening on ${port}`));
+app.listen(port, () => console.log(`Listening on ${port}`));
 
 let numUsers = 0;
 let currentUsers = [];
