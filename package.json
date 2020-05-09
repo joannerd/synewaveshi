@@ -6,7 +6,8 @@
   "scripts": {
     "start": "per-env",
     "start:development": "nodemon -r dotenv/config app.js",
-    "start:production": "node app.js"
+    "start:production": "node app.js",
+    "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "keywords": [],
   "author": "",
@@ -17,10 +18,10 @@
     "morgan": "^1.10.0",
     "path": "^0.12.7",
     "per-env": "^1.0.2",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "dotenv": "^8.2.0"
   },
   "devDependencies": {
-    "dotenv": "^8.2.0",
     "nodemon": "^2.0.3"
   }
 }
