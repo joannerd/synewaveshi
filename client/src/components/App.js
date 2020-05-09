@@ -12,7 +12,7 @@ const App = () => {
   //   path: '/socket',
   // });
 
-  const socket = io();
+  const socket = io('https://synewaveshi.herokuapp.com/');
 
   const updateUsername = (name) => {
     setUsername(name);

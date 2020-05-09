@@ -1,38 +1,26 @@
-const express = require('express');
+const app = require('express')();
+const server = require('http').Server(app);
 const path = require('path');
 const morgan = require('morgan');
-const { createServer } = require('http');
-const socketIO = require('socket.io');
+const io = require('socket.io')(server);
 
-// require('dotenv').config();
+// const io = socketIO(server, {
+//   serveClient: true,
+// });
 
-// const { port } = require('./config');
-
-const app = express();
-const server = createServer(app);
-const io = socketIO(server, {
-  serveClient: true,
-});
-
-server.listen(3001, () => console.log(`Listening on port 3001`));
+server.listen(80);
 
 app.use(morgan('dev'));
-
-// app.use(express.static(path.join(__dirname, '/public')))
 app.use(express.static(path.join(__dirname, '/client/build')));
 
-// app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-// });
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build/index.html'));
 });
 
-
 let numUsers = 0;
 let currentUsers = [];
 
-io.on('connect', (socket) => {
+io.on('connection', (socket) => {
   let newUser = false;
 
   socket.on('add note', (note) => {
