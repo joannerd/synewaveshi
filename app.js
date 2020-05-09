@@ -12,42 +12,39 @@ const app = express();
 const server = createServer(app);
 const io = socketIO(server);
 
-// server.listen(port, () => console.log(`Listening on http://localhost:${port}`));
-
-// app
-//   .use(morgan('dev'))
-//   .use(express.static(path.join(__dirname, '/public')))
-//   .get('*', (req, res) => {
-//     res.sendFile(path.join(__dirname, 'build', 'index.html'));
-//   });
-
 app.use(morgan('dev'));
+
+// app.use(express.static(path.join(__dirname, '/public')))
 app.use(express.static(path.join(__dirname, '/client/build')));
 
-// app.listen(port, () => console.log(`Listening on ${port}`))
+// app.get('*', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// });
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build/index.html'));
 });
 
+app.listen(port, () => console.log(`Listening on ${port}`));
+
 let numUsers = 0;
 let currentUsers = [];
 
-io.on('connect', socket => {
+io.on('connect', (socket) => {
   let newUser = false;
 
-  socket.on('add note', note => {
+  socket.on('add note', (note) => {
     console.log(`Broadcasting new note: ${note}`);
     socket.broadcast.emit('note added', {
       note,
     });
   });
 
-  socket.on('add user', username => {
+  socket.on('add user', (username) => {
     if (newUser) return;
 
     socket.username = username;
     numUsers += 1;
-    currentUsers.push({ id: numUsers, username })
+    currentUsers.push({ id: numUsers, username });
     newUser = true;
 
     console.log(`
@@ -68,8 +65,10 @@ io.on('connect', socket => {
 
     numUsers -= 1;
     console.log(`${socket.username} disconnected`);
-    currentUsers = currentUsers.filter(user => user.username !== socket.username);
-    
+    currentUsers = currentUsers.filter(
+      (user) => user.username !== socket.username
+    );
+
     socket.username = undefined;
     console.log(`
       New user: ${socket.username}
@@ -84,7 +83,3 @@ io.on('connect', socket => {
     });
   });
 });
-
-
-
-
