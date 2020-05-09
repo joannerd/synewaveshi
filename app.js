@@ -1,4 +1,5 @@
-const app = require('express')();
+const express = require('express');
+const app = express();
 const server = require('http').Server(app);
 const path = require('path');
 const morgan = require('morgan');
@@ -8,7 +9,7 @@ const io = require('socket.io')(server);
 //   serveClient: true,
 // });
 
-server.listen(80);
+server.listen(80, () => console.log('Listening at port 80.'));
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, '/client/build')));
