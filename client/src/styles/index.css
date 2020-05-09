@@ -2,7 +2,7 @@ body {
   font-family: 'Jost', sans-serif;
   text-align: center;
   background-color: #70a1ff;
-  background-image: linear-gradient(315deg, #4baeff 0%, #ffdfdf 74%);
+  background-image: linear-gradient(315deg, #4baeff 0%, #ffdfdf 70%);
 }
 
 body, #welcome {
@@ -25,6 +25,7 @@ h2 {
 
 h3 {
   font-size: 30px;
+  margin-bottom: 5px;
 }
 
 h4 {
@@ -62,6 +63,9 @@ input {
   min-width: 30vw;
   line-height: 20vh;
   border-radius: 10px;
+  word-wrap: break-word;
+  padding: 10px;
+  margin: 10px;
 }
 
 .current-users {
