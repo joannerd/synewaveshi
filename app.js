@@ -10,7 +10,10 @@ const { port } = require('./config');
 
 const app = express();
 const server = createServer(app);
-const io = socketIO(server);
+const io = socketIO(server, {
+  path: '/socket',
+  serveClient: true,
+});
 
 app.use(morgan('dev'));
 

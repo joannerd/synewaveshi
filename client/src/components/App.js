@@ -9,7 +9,7 @@ const App = () => {
   const [currentUsers, setCurrentUsers] = useState([]);
 
   const socket = io(socketUrl, {
-    path: '/socket.io',
+    path: '/socket',
   });
 
   const updateUsername = (name) => {
