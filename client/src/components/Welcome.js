@@ -6,6 +6,17 @@ const SYNE_IS_LISTENING = 'Syne is listening...';
 const CLICK_TO_SPEAK_AGAIN = 'Click to speak again.'
 
 const Welcome = ({ username, currentUsers, socket }) => {
+  const isChrome =
+    !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+
+  if (!isChrome) {
+    window.confirm(
+      'Web Speech API is currently only compatible with Google Chrome and Microsoft Edge. Click OK to view the browser compatibility chart.'
+    );
+    window.location.href =
+      'https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API#Browser_compatibility';
+  }
+
   const [syneText, setSyneText] = useState('Click and say a note to begin.');
   const [noteRegister, setNoteRegister] = useState(3);
 
@@ -50,7 +61,7 @@ const Welcome = ({ username, currentUsers, socket }) => {
     recognition.start();
     
     socket.on('note added', (data) => {
-      // console.log(`Added new note: ${data.note}!`);
+      console.log(`Added note: ${data.note}!`);
       synth.triggerAttackRelease(data.note, '10');
     });
 
@@ -85,13 +96,12 @@ const Welcome = ({ username, currentUsers, socket }) => {
       }
 
       const fullNote = noteToPlay + noteRegister;
-      // console.log(fullNote);
+      console.log(`Recognized note: ${fullNote}`);
       socket.emit('add note', fullNote);
 
       synth.triggerAttackRelease(fullNote, '10');
-      // console.log(synth);
 
-      // console.log('Confidence: ' + e.results[0][0].confidence);
+      console.log('Confidence: ' + e.results[0][0].confidence);
     };
 
     recognition.onspeechend = () => {
