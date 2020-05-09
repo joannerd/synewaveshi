@@ -24,7 +24,7 @@ io.on('connection', (socket) => {
   let newUser = false;
 
   socket.on('add note', (note) => {
-    // console.log(`Broadcasting new note: ${note}`);
+    console.log(`Broadcasting new note: ${note}`);
     socket.broadcast.emit('note added', {
       note,
     });
@@ -38,11 +38,11 @@ io.on('connection', (socket) => {
     currentUsers.push({ id: numUsers, username });
     newUser = true;
 
-    // console.log(`
-    //   New user: ${username}
-    //   Num users: ${numUsers}
-    //   Current users: ${currentUsers}
-    // `);
+    console.log(`
+      New user: ${username}
+      Num users: ${numUsers}
+      Current users: ${currentUsers}
+    `);
 
     socket.broadcast.emit('user joined', {
       username: socket.username,
@@ -55,17 +55,17 @@ io.on('connection', (socket) => {
     if (!newUser) return;
 
     numUsers -= 1;
-    // console.log(`${socket.username} disconnected`);
+    console.log(`${socket.username} disconnected`);
     currentUsers = currentUsers.filter(
       (user) => user.username !== socket.username
     );
 
     socket.username = undefined;
-    // console.log(`
-    //   New user: ${socket.username}
-    //   Current users: ${currentUsers}
-    //   Num users: ${numUsers}
-    // `);
+    console.log(`
+      New user: ${socket.username}
+      Current users: ${currentUsers}
+      Num users: ${numUsers}
+    `);
 
     socket.broadcast.emit('user left', {
       username: socket.username,
