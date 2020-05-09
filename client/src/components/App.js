@@ -8,9 +8,11 @@ const App = () => {
   const [username, setUsername] = useState('');
   const [currentUsers, setCurrentUsers] = useState([]);
 
-  const socket = io(socketUrl, {
-    path: '/socket',
-  });
+  // const socket = io(socketUrl, {
+  //   path: '/socket',
+  // });
+
+  const socket = io();
 
   const updateUsername = (name) => {
     setUsername(name);
