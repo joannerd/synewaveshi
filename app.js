@@ -12,14 +12,22 @@ const app = express();
 const server = createServer(app);
 const io = socketIO(server);
 
-server.listen(port, () => console.log(`Listening on http://localhost:${port}`));
+// server.listen(port, () => console.log(`Listening on http://localhost:${port}`));
 
-app
-  .use(morgan('dev'))
-  .use(express.static(path.join(__dirname, '/public')))
-  .get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
-  });
+// app
+//   .use(morgan('dev'))
+//   .use(express.static(path.join(__dirname, '/public')))
+//   .get('*', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'build', 'index.html'));
+//   });
+
+app.use(morgan('dev'));
+app.use(express.static(path.join(__dirname, '/client/build')));
+
+// app.listen(port, () => console.log(`Listening on ${port}`))
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname + '/client/build/index.html'));
+});
 
 let numUsers = 0;
 let currentUsers = [];
