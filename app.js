@@ -6,12 +6,7 @@ const morgan = require('morgan');
 const socketIO = require('socket.io');
 
 const server = http.Server(app)
-
-const io = socketIO(server, {
-  serveClient: true,
-});
-
-server.listen(3001, () => console.log('Listening at port 3001.'));
+server.listen(80, () => console.log('Listening at port 80.'));
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, '/client/build')));
@@ -20,6 +15,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname + '/client/build/index.html'));
 });
 
+const io = socketIO(server);
 let numUsers = 0;
 let currentUsers = [];
 
