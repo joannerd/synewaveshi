@@ -5,8 +5,9 @@ const path = require('path');
 const morgan = require('morgan');
 const socketIO = require('socket.io');
 
-const server = http.Server(app)
-server.listen(80, () => console.log('Listening at port 80.'));
+const server = http.Server(app);
+const PORT = process.env.PORT || 80;
+server.listen(PORT, () => console.log(`Listening at port ${PORT}...`));
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, '/client/build')));
