@@ -5,6 +5,16 @@ const Home = ({ updateUsername }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const isChrome =
+      !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
+
+    if (!isChrome) {
+      alert(
+        'Web Speech API is currently only compatible with Google Chrome and Microsoft Edge.'
+      );
+    }
+    
     if (username) {
       updateUsername(username);
     } else {

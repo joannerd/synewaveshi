@@ -3,22 +3,10 @@ import Tone from 'tone';
 import CurrentUsersList from './CurrentUsersList';
 
 const Welcome = ({ username, currentUsers, socket }) => {
-  const isChrome =
-    !!window.chrome && (!!window.chrome.webstore || !!window.chrome.runtime);
-
-  if (!isChrome) {
-    window.confirm(
-      'Web Speech API is currently only compatible with Google Chrome and Microsoft Edge. Click OK to view the browser compatibility chart.'
-    );
-    window.location.href =
-      'https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API#Browser_compatibility';
-  }
-
-  // Default component state
   const [syneStatus, setSyneStatus] = useState('Click and say a note to begin.');
   const [syneText, setSyneText] = useState('');
-  const [backgroundColor1, setBackgroundColor1] = useState('');
-  const [backgroundColor2, setBackgroundColor2] = useState('');
+  const [backgroundColor1, setBackgroundColor1] = useState('white');
+  const [backgroundColor2, setBackgroundColor2] = useState('white');
   const [noteRegister, setNoteRegister] = useState(2);
 
   // Set array of possible notes
@@ -29,13 +17,13 @@ const Welcome = ({ username, currentUsers, socket }) => {
 
   // Set object of possible colors
   const colors = {
-    a: '#d6f5d6',
-    b: '#e6e6ff',
-    c: '#ffd9cc',
-    d: '#ffeb99',
-    e: '#f5f5f0',
+    a: '#abc4ab',
+    b: '#cdcdff',
+    c: '#ffb399',
+    d: '#ffe166',
+    e: '#d6d6c2',
     f: '#e59a9a',
-    g: '#ffcc80',
+    g: '#ffb84d',
   };
 
   // Set voice recognition grammar list
@@ -51,7 +39,6 @@ const Welcome = ({ username, currentUsers, socket }) => {
   recognition.lang = 'en-US';
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-
 
   const handleClick = () => {
     window.navigator.permissions.query({ name: 'microphone' })
@@ -71,14 +58,16 @@ const Welcome = ({ username, currentUsers, socket }) => {
     return Math.floor(Math.random() * Math.floor(max));
   };
 
+  const synth = new Tone.Synth().toMaster();
+
   useEffect(() => {
     recognition.start();
-    const synth = new Tone.Synth().toMaster();
     
     // Web socket listener for new remotely added note
     socket.on('note added', (data) => {
-      console.log(`Added note: ${data.note}!`);
+      console.log(`Added note: ${data.color}!`);
       synth.triggerAttackRelease(data.note, '10');
+      setBackgroundColor2(data.color);
     });
 
     // Voice input listener to generate new note and change background color
@@ -94,7 +83,8 @@ const Welcome = ({ username, currentUsers, socket }) => {
 
       if (notes.includes(note)) {
         noteToPlay = note;
-        
+        newColor = colors[note];
+
         if (note.split(' ').length !== 1) {
           const noteParts = note.split(' ');
 
@@ -113,9 +103,11 @@ const Welcome = ({ username, currentUsers, socket }) => {
       }
 
       const fullNote = noteToPlay + noteRegister;
-      socket.emit('add note', fullNote);
+      socket.emit('add note', {
+        fullNote,
+        newColor
+      });
       synth.triggerAttackRelease(fullNote, '10');
-
       setBackgroundColor1(backgroundColor2);
       setBackgroundColor2(newColor);
 
@@ -135,11 +127,13 @@ const Welcome = ({ username, currentUsers, socket }) => {
   }, [
     noteRegister,
     socket,
+    synth,
     recognition,
     syneStatus,
     naturalNotes,
     notes,
     colors,
+    backgroundColor2,
   ]);
 
   const users = currentUsers.filter((user) => user.username !== username);
@@ -153,7 +147,7 @@ const Welcome = ({ username, currentUsers, socket }) => {
       }}
     >
       <h2>Welcome, {username}!</h2>
-      <h3 id="wave">Click to begin waving.</h3>
+      <h3 id="wave" >Click to begin waving.</h3>
       <CurrentUsersList users={users} />
 
       <h3>Low or High</h3>
