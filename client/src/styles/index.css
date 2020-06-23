@@ -72,3 +72,7 @@ input {
   padding: 20px;
   min-height: 10vh;
 }
+
+input[type=range] {
+  padding: 0px;
+}

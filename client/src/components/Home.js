@@ -32,7 +32,7 @@ const Home = ({ updateUsername }) => {
           type="text"
           value={username}
           onChange={changeUsername}
-          placeholder="Enter your name to wave back."
+          placeholder="Enter your name"
         />
       </form>
     </>
