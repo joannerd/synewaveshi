@@ -3,7 +3,9 @@ import Tone from 'tone';
 import CurrentUsersList from './CurrentUsersList';
 
 const Welcome = ({ username, currentUsers, socket }) => {
-  const [syneStatus, setSyneStatus] = useState('Click and say a note to begin.');
+  const [syneStatus, setSyneStatus] = useState(
+    `Click and say something to begin!`
+  );
   const [syneText, setSyneText] = useState('');
   const [backgroundColor1, setBackgroundColor1] = useState('white');
   const [backgroundColor2, setBackgroundColor2] = useState('white');
@@ -124,6 +126,9 @@ const Welcome = ({ username, currentUsers, socket }) => {
       if (e.error !== 'aborted')
         setSyneText(`Error occurred in recognition: ${e.error}.`);
     };
+
+    // Clean-up function to close voice recognition
+    return () => recognition.stop();
   }, [
     noteRegister,
     socket,
