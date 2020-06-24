@@ -35,7 +35,7 @@ class ChatHistory {
   addMessage(value, user) {
     const node = new ChatNode(value, user);
 
-    if (!node.head) {
+    if (!this.head) {
       this.head = node;
     } else {
       this.tail.next = node;
@@ -50,7 +50,7 @@ class ChatHistory {
     if (!this.head) return [];
 
     const messages = [];
-    let currentNode = this.tail;
+    let currentNode = this.head;
     while (currentNode) {
       messages.push({
         timestamp: currentNode.timestamp,
