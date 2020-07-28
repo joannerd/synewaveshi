@@ -1,14 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
-import Home from './Home';
+import Splash from './Splash';
 import Welcome from './Welcome';
 import { socketUrl } from '../config';
+import HistoryContext from '../HistoryContext';
+import History from './History';
 
-const App = () => {
-  const [username, setUsername] = useState('');
+const App = ({
+  socket,
+  username,
+  setCurrentUsers,
+  setSyneHistory,
+}) => {
+  useEffect(() => {
+    socket.on('user joined', (data) => {
+      setCurrentUsers(data.currentUsers);
+      setSyneHistory(data.history);
+    });
+
+    socket.on('user left', (data) => {
+      setCurrentUsers(data.currentUsers);
+      setSyneHistory(data.history);
+    });
+  }, [socket, username, setCurrentUsers, setSyneHistory]);
+
+  if (!username) return <Splash />;
+  return (
+    <div id="home">
+      <Welcome />
+      <History />
+    </div>
+  );
+};
+
+const AppWithContext = () => {
+  const [socket, setSocket] = useState(null);
+  const [syneHistory, setSyneHistory] = useState([]);
   const [currentUsers, setCurrentUsers] = useState([]);
-
-  const socket = io(socketUrl);
+  const [username, setUsername] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
 
   const updateUsername = (name) => {
     setUsername(name);
@@ -16,28 +46,39 @@ const App = () => {
   };
 
   useEffect(() => {
-    socket.on('user joined', data => {
-      console.log(`${data.username} joined!`);
-      setCurrentUsers(data.currentUsers);
-    })
+    const newSocket = io(socketUrl);
+    setSocket(newSocket);
+    setIsConnected(true);
+    return () => {
+      if (isConnected) {
+        socket.emit('disconnect');
+        setIsConnected(false);
+      }
+    }
+  }, []);
 
-    socket.on('user left', data => {
-      console.log('user left!');
-      setCurrentUsers(data.currentUsers);
-    });
+  const state = {
+    socket,
+    username,
+    currentUsers,
+    syneHistory,
+    updateUsername,
+    setCurrentUsers,
+    setSyneHistory,
+  };
 
-    socket.on('disconnect', () => {
-      console.log(`user has disconnected.`);
-    });
+  if (!isConnected) return <h1>Connecting...</h1>
 
-    socket.on('reconnect', () => {
-      console.log(`user has been reconnected!`);
-      if (username) socket.emit('add user', username);
-    });
-  }, [socket, username])
+  return (
+    <HistoryContext.Provider value={state}>
+      <App
+        socket={socket}
+        username={username}
+        setSyneHistory={setSyneHistory}
+        setCurrentUsers={setCurrentUsers}
+      />
+    </HistoryContext.Provider>
+  );
+}
 
-  if (!username) return <Home updateUsername={updateUsername} />;
-  return <Welcome username={username} currentUsers={currentUsers} socket={socket} />;
-};
-
-export default App;
+export default AppWithContext;

@@ -1,13 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import Tone from 'tone';
 import CurrentUsersList from './CurrentUsersList';
+import HistoryContext from '../HistoryContext';
 
-const Welcome = ({ username, currentUsers, socket }) => {
-  const [syneStatus, setSyneStatus] = useState('Click and say a note to begin.');
+const Welcome = () => {
+  const {
+    socket,
+    username,
+    setSyneHistory,
+    currentUsers
+  } = useContext(HistoryContext);
+  const [syneStatus, setSyneStatus] = useState('Click and say something to begin!');
   const [syneText, setSyneText] = useState('');
   const [backgroundColor1, setBackgroundColor1] = useState('white');
   const [backgroundColor2, setBackgroundColor2] = useState('white');
   const [noteRegister, setNoteRegister] = useState(2);
+  const [isListening, setIsListening] = useState(false);
 
   // Set array of possible notes
   const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
@@ -65,15 +73,14 @@ const Welcome = ({ username, currentUsers, socket }) => {
     
     // Web socket listener for new remotely added note
     socket.on('note added', (data) => {
-      console.log(`Added note: ${data.color}!`);
       synth.triggerAttackRelease(data.note, '10');
+      setSyneHistory(data.history);
       setBackgroundColor2(data.color);
     });
 
     // Voice input listener to generate new note and change background color
     recognition.onresult = (e) => {
       const note = e.results[0][0].transcript.toLowerCase();
-
       setSyneStatus('Syne is listening...');
       setSyneText(`Received input: ${note.toUpperCase()}`);
 
@@ -105,13 +112,13 @@ const Welcome = ({ username, currentUsers, socket }) => {
       const fullNote = noteToPlay + noteRegister;
       socket.emit('add note', {
         fullNote,
-        newColor
+        newColor,
+        username,
+        message: note,
       });
       synth.triggerAttackRelease(fullNote, '10');
       setBackgroundColor1(backgroundColor2);
       setBackgroundColor2(newColor);
-
-      console.log('Confidence: ' + e.results[0][0].confidence);
     };
 
     recognition.onspeechend = () => setSyneStatus('Click to speak again.');
@@ -126,7 +133,6 @@ const Welcome = ({ username, currentUsers, socket }) => {
     };
   }, [
     noteRegister,
-    socket,
     synth,
     recognition,
     syneStatus,
@@ -134,7 +140,22 @@ const Welcome = ({ username, currentUsers, socket }) => {
     notes,
     colors,
     backgroundColor2,
+    setSyneHistory,
+    socket,
+    username,
   ]);
+
+  useEffect(() => {
+    setIsListening(true);
+
+    // Clean-up function to close voice recognition
+    return () => {
+      if (isListening) {
+        recognition.stop();
+        setIsListening(false);
+      }
+    };
+  }, []);
 
   const users = currentUsers.filter((user) => user.username !== username);
 
@@ -147,9 +168,8 @@ const Welcome = ({ username, currentUsers, socket }) => {
       }}
     >
       <h2>Welcome, {username}!</h2>
-      <h3 id="wave" >Click to begin waving.</h3>
+      <h3 id="wave">Click to begin waving.</h3>
       <CurrentUsersList users={users} />
-
       <h3>Low or High</h3>
       <h4>Current selected note register: {noteRegister}</h4>
       <input

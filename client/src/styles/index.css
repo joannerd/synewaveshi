@@ -7,11 +7,14 @@ body {
 
 body, #welcome {
   height: 100vh;
-  width: 100vw;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+#welcome {
+  width: 66vw;
 }
 
 h1 {
@@ -47,6 +50,7 @@ input {
   border: 1px solid rgba(0, 0, 0, 0.1);
   width: 225px;
   box-sizing: border-box;
+  text-align: center;
 }
 
 ::placeholder {
@@ -68,7 +72,56 @@ input {
   margin: 10px;
 }
 
+#home {
+  display: flex;
+  flex-direction: row;
+}
+
+#history {
+  width: 33vw;
+  height: 100vh;
+  overflow: auto;
+}
+
+#history h3 {
+  margin: 20% 0 10% 0;
+  font-size: 35px;
+}
+
+#history .time {
+  margin-bottom: 5%;
+  font-size: 12px;
+  color: grey;
+}
+
+#history .msg {
+  margin: 5% 20% 0% 20%;
+  padding: 5% 5% 5% 5%;
+  background: white;
+  border-radius: 7px;
+  text-align: left;
+  font-size: 15px;
+}
+
+#history .user {
+  margin: 3% 22% 5% 22%;
+  color: rgb(78, 78, 78);
+  font-size: 14px;
+}
+
+.left {
+  text-align: left;
+}
+
+.right {
+  text-align: right;
+}
+
 .current-users {
   padding: 20px;
   min-height: 10vh;
+}
+
+input[type=range] {
+  padding: 0px;
 }
