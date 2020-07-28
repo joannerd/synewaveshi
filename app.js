@@ -4,8 +4,9 @@ const http = require('http');
 const path = require('path');
 const morgan = require('morgan');
 const socketIO = require('socket.io');
+const { ChatHistory } = require('./chatHistoryLinkedList');
 
-const server = http.Server(app);
+const server = http.createServer(app);
 const PORT = process.env.PORT || 80;
 server.listen(PORT, () => console.log(`Listening at port ${PORT}...`));
 
@@ -19,33 +20,39 @@ app.get('*', (req, res) => {
 const io = socketIO(server);
 let numUsers = 0;
 let currentUsers = [];
+let history = new ChatHistory();
 
 io.on('connection', (socket) => {
-  let newUser = false;
+  socket.on('add note', ({ fullNote, newColor, username, message }) => {
+    history.addMessage(`${message} (note: ${fullNote})`, username);
 
-  socket.on('add note', ({ fullNote, newColor }) => {
-    console.log(`Broadcasting new note: ${fullNote}`);
+    console.log(`
+      len: ${history.toArray().length}
+      Broadcasting new note: ${fullNote}
+      History: ${history.lastMessage()}
+    `);
+    
     socket.broadcast.emit('note added', {
+      history: history.toArray(),
       note: fullNote,
       color: newColor,
     });
   });
 
   socket.on('add user', (username) => {
-    if (newUser) return;
-
     socket.username = username;
     numUsers += 1;
     currentUsers.push({ id: numUsers, username });
-    newUser = true;
+    history.addMessage(`${username} joined`, username);
 
     console.log(`
       New user: ${username}
       Num users: ${numUsers}
-      Current users: ${currentUsers}
+      History: ${history.lastMessage()}
     `);
 
-    socket.broadcast.emit('user joined', {
+    io.emit('user joined', {
+      history: history.toArray(),
       username: socket.username,
       currentUsers,
       numUsers,
@@ -53,25 +60,34 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    if (!newUser) return;
+    if (numUsers > 0) {
+      numUsers -= 1;
+      currentUsers = currentUsers.filter(
+        (user) => user.username !== socket.username
+      );
+    }
+    if (numUsers === 0) {
+      currentUsers = [];
+      history.clear();
+    } else {
+      history.addMessage(`${socket.username} disconnected`, socket.username);
+    }
 
-    numUsers -= 1;
-    console.log(`${socket.username} disconnected`);
-    currentUsers = currentUsers.filter(
-      (user) => user.username !== socket.username
-    );
-
-    socket.username = undefined;
     console.log(`
-      New user: ${socket.username}
-      Current users: ${currentUsers}
+      Disconnected user: ${socket.username}
       Num users: ${numUsers}
+      History: ${history.lastMessage()}
     `);
 
+    socket.username = undefined;
+
     socket.broadcast.emit('user left', {
+      history: history.toArray(),
       username: socket.username,
       currentUsers,
       numUsers,
     });
+
+    socket.disconnect();
   });
 });
