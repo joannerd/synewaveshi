@@ -83,9 +83,7 @@ io.on('connection', (socket) => {
 
     socket.broadcast.emit('user left', {
       history: history.toArray(),
-      username: socket.username,
       currentUsers,
-      numUsers,
     });
 
     socket.disconnect();

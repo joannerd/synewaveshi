@@ -1,79 +1,46 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState } from 'react';
 import Tone from 'tone';
 import CurrentUsersList from './CurrentUsersList';
-import HistoryContext from '../HistoryContext';
+import { naturalNotes, notes, colors, getRandomInt } from './util';
 
-const Welcome = () => {
-  const {
-    socket,
-    username,
-    setSyneHistory,
-    currentUsers
-  } = useContext(HistoryContext);
+const synth = new Tone.Synth().toMaster();
+
+const Welcome = ({
+  socket,
+  username,
+  setSyneHistory,
+  currentUsers,
+}) => {
+  const users = currentUsers.filter((user) => user.username !== username);
+  const [isSyneBotOn, setIsSyneBotOn] = useState(false);
+  const [syneBotInterval, setSyneBotInterval] = useState(null);
+
   const [syneStatus, setSyneStatus] = useState('Click and say something to begin!');
   const [syneText, setSyneText] = useState('');
   const [backgroundColor1, setBackgroundColor1] = useState('white');
   const [backgroundColor2, setBackgroundColor2] = useState('white');
   const [noteRegister, setNoteRegister] = useState(2);
-  const [isListening, setIsListening] = useState(false);
-
-  // Set array of possible notes
-  const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
-  const flatNotes = naturalNotes.map((note) => note + ' flat');
-  const sharpNotes = naturalNotes.map((note) => note + ' sharp');
-  const notes = naturalNotes.concat(flatNotes, sharpNotes).sort();
-
-  // Set object of possible colors
-  const colors = {
-    a: '#abc4ab',
-    b: '#cdcdff',
-    c: '#ffb399',
-    d: '#ffe166',
-    e: '#d6d6c2',
-    f: '#e59a9a',
-    g: '#ffb84d',
-  };
-
-  // Set voice recognition grammar list
-  const grammar = 'grammar notes; public <note> = ' + notes.join(' | ') + ' ;';
-  const speechRecognitionList = new window.webkitSpeechGrammarList();
-  speechRecognitionList.addFromString(grammar, 
-  1);
-
-  // Create voice recognition object
-  const recognition = new window.webkitSpeechRecognition();
-  recognition.grammars = speechRecognitionList;
-  recognition.continuous = false;
-  recognition.lang = 'en-US';
-  recognition.interimResults = false;
-  recognition.maxAlternatives = 1;
-
-  const handleClick = () => {
-    window.navigator.permissions.query({ name: 'microphone' })
-      .then(res => {
-        if (res.state === 'granted') {
-          setSyneStatus('Syne is listening...');
-        } else {
-          recognition.stop();
-          setSyneStatus('Please enable microphone access.');
-        }
-      });
-  };
-
   const changeNoteRegister = (e) => setNoteRegister(e.target.value);
-  
-  const getRandomInt = (max) => {
-    return Math.floor(Math.random() * Math.floor(max));
-  };
-
-  const synth = new Tone.Synth().toMaster();
 
   useEffect(() => {
+    // Set voice recognition grammar list
+    const grammar = 'grammar notes; public <note> = ' + notes.join(' | ') + ' ;';
+    const speechRecognitionList = new window.webkitSpeechGrammarList();
+    speechRecognitionList.addFromString(grammar, 1);
+
+    // Create voice recognition object
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.grammars = speechRecognitionList;
+    recognition.continuous = false;
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
     recognition.start();
-    
+
     // Web socket listener for new remotely added note
     socket.on('note added', (data) => {
-      synth.triggerAttackRelease(data.note, '10');
+      synth.triggerAttackRelease(data.note, '8n');
       setSyneHistory(data.history);
       setBackgroundColor2(data.color);
     });
@@ -81,7 +48,7 @@ const Welcome = () => {
     // Voice input listener to generate new note and change background color
     recognition.onresult = (e) => {
       const note = e.results[0][0].transcript.toLowerCase();
-      setSyneStatus('Syne is listening...');
+      setSyneStatus('Listening...');
       setSyneText(`Received input: ${note.toUpperCase()}`);
 
       const randomIdx = getRandomInt(7);
@@ -116,12 +83,15 @@ const Welcome = () => {
         username,
         message: note,
       });
-      synth.triggerAttackRelease(fullNote, '10');
+
+      synth.triggerAttackRelease(fullNote, '8n');
       setBackgroundColor1(backgroundColor2);
       setBackgroundColor2(newColor);
     };
 
-    recognition.onspeechend = () => setSyneStatus('Click to speak again.');
+    recognition.onspeechend = () => setSyneStatus('Click and speak again.');
+
+    recognition.onend = () => recognition.start();
 
     recognition.onnomatch = () => {
       setSyneText("Syne didn't recognize that note.");
@@ -131,33 +101,43 @@ const Welcome = () => {
       if (e.error !== 'aborted')
         setSyneText(`Error occurred in recognition: ${e.error}.`);
     };
-  }, [
-    noteRegister,
-    synth,
-    recognition,
-    syneStatus,
-    naturalNotes,
-    notes,
-    colors,
-    backgroundColor2,
-    setSyneHistory,
-    socket,
-    username,
-  ]);
-
-  useEffect(() => {
-    setIsListening(true);
 
     // Clean-up function to close voice recognition
     return () => {
-      if (isListening) {
-        recognition.stop();
-        setIsListening(false);
-      }
+      recognition.stop();
     };
+    // eslint-disable-next-line
   }, []);
 
-  const users = currentUsers.filter((user) => user.username !== username);
+  const handleClick = () => {
+    window.navigator.permissions.query({ name: 'microphone' })
+      .then(res => {
+        if (res.state === 'granted') {
+          setSyneStatus('Listening...');
+        } else {
+          setSyneStatus('Please enable microphone access.');
+        }
+      });
+  };
+
+  const syneBotButtonText = isSyneBotOn ? 'say bye to' : 'wave with';
+  const toggleSyneBot = () => {
+    if (isSyneBotOn) {
+      clearInterval(syneBotInterval);
+    } else {
+      let idx = 2;
+      setSyneBotInterval(setInterval(() => {
+        const fullNote = naturalNotes[idx] + 1;
+        synth.triggerAttackRelease(fullNote, '8n');
+        if (idx === 6) {
+          idx = 2;
+        } else {
+          idx += 2;
+        }
+      }, 1000))
+    }
+    setIsSyneBotOn(isSyneBotOn => !isSyneBotOn);
+  };
 
   return (
     <div
@@ -168,8 +148,9 @@ const Welcome = () => {
       }}
     >
       <h2>Welcome, {username}!</h2>
-      <h3 id="wave">Click to begin waving.</h3>
+      <h3 id="wave">Start speaking to make sounds.</h3>
       <CurrentUsersList users={users} />
+      <button id="synebot" onClick={toggleSyneBot}>Click to {syneBotButtonText} SyneBot</button>
       <h3>Low or High</h3>
       <h4>Current selected note register: {noteRegister}</h4>
       <input

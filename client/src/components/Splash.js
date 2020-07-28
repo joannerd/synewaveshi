@@ -1,8 +1,6 @@
-import React, { useState, useContext } from 'react';
-import HistoryContext from '../HistoryContext';
+import React, { useState } from 'react';
 
-const Splash = () => {
-  const { updateUsername } = useContext(HistoryContext);
+const Splash = ({ updateUsername }) => {
   const [usernameInput, setUsernameInput] = useState('');
 
   const handleSubmit = (e) => {
