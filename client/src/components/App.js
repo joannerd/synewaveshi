@@ -3,15 +3,31 @@ import io from 'socket.io-client';
 import Splash from './Splash';
 import Welcome from './Welcome';
 import { socketUrl } from '../config';
-import HistoryContext from '../HistoryContext';
 import History from './History';
 
-const App = ({
-  socket,
-  username,
-  setCurrentUsers,
-  setSyneHistory,
-}) => {
+const App = () => {
+  const socket = io(socketUrl);
+  const [username, setUsername] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
+
+  const updateUsername = (name) => {
+    setUsername(name);
+    socket.emit('add user', name);
+  };
+
+  useEffect(() => {
+    setIsConnected(true);
+    return () => {
+      if (isConnected) {
+        socket.emit('disconnect');
+        setIsConnected(false);
+      }
+    }
+    // eslint-disable-next-line
+  }, []);
+  const [syneHistory, setSyneHistory] = useState([]);
+  const [currentUsers, setCurrentUsers] = useState([]);
+
   useEffect(() => {
     socket.on('user joined', (data) => {
       setCurrentUsers(data.currentUsers);
@@ -24,62 +40,24 @@ const App = ({
     });
   }, [socket, username, setCurrentUsers, setSyneHistory]);
 
-  if (!username) return <Splash />;
-  return (
-    <div id="home">
-      <Welcome />
-      <History />
-    </div>
-  );
-};
-
-const AppWithContext = () => {
-  const [socket, setSocket] = useState(null);
-  const [syneHistory, setSyneHistory] = useState([]);
-  const [currentUsers, setCurrentUsers] = useState([]);
-  const [username, setUsername] = useState('');
-  const [isConnected, setIsConnected] = useState(false);
-
-  const updateUsername = (name) => {
-    setUsername(name);
-    socket.emit('add user', name);
-  };
-
-  useEffect(() => {
-    const newSocket = io(socketUrl);
-    setSocket(newSocket);
-    setIsConnected(true);
-    return () => {
-      if (isConnected) {
-        socket.emit('disconnect');
-        setIsConnected(false);
-      }
-    }
-    // eslint-disable-next-line
-  }, []);
-
-  const state = {
-    socket,
-    username,
-    currentUsers,
-    syneHistory,
-    updateUsername,
-    setCurrentUsers,
-    setSyneHistory,
-  };
+  if (!username) return <Splash updateUsername={updateUsername} />;
 
   if (!isConnected) return <h1>Connecting...</h1>
 
   return (
-    <HistoryContext.Provider value={state}>
-      <App
+    <div id="home">
+      <Welcome
         socket={socket}
         username={username}
         setSyneHistory={setSyneHistory}
-        setCurrentUsers={setCurrentUsers}
+        currentUsers={currentUsers}
       />
-    </HistoryContext.Provider>
+      <History
+        syneHistory={syneHistory}
+        username={username}
+      />
+    </div>
   );
-}
+};
 
-export default AppWithContext;
+export default App;
