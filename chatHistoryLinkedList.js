@@ -68,6 +68,12 @@ class ChatHistory {
     if (!this.tail) return '';
     return this.tail.value;
   }
+
+  clear() {
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
+  }
 }
 
 module.exports = {

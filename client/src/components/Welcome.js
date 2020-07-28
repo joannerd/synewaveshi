@@ -4,12 +4,18 @@ import CurrentUsersList from './CurrentUsersList';
 import HistoryContext from '../HistoryContext';
 
 const Welcome = () => {
-  const context = useContext(HistoryContext);
-  const [syneStatus, setSyneStatus] = useState(`Click and say something to begin!`);
+  const {
+    socket,
+    username,
+    setSyneHistory,
+    currentUsers
+  } = useContext(HistoryContext);
+  const [syneStatus, setSyneStatus] = useState('Click and say something to begin!');
   const [syneText, setSyneText] = useState('');
   const [backgroundColor1, setBackgroundColor1] = useState('white');
   const [backgroundColor2, setBackgroundColor2] = useState('white');
   const [noteRegister, setNoteRegister] = useState(2);
+  const [isListening, setIsListening] = useState(false);
 
   // Set array of possible notes
   const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
@@ -63,12 +69,10 @@ const Welcome = () => {
   const synth = new Tone.Synth().toMaster();
 
   useEffect(() => {
-    const { socket, username, setSyneHistory } = context;
     recognition.start();
     
     // Web socket listener for new remotely added note
     socket.on('note added', (data) => {
-      console.log(`Added note: ${data.color}!`);
       synth.triggerAttackRelease(data.note, '10');
       setSyneHistory(data.history);
       setBackgroundColor2(data.color);
@@ -115,8 +119,6 @@ const Welcome = () => {
       synth.triggerAttackRelease(fullNote, '10');
       setBackgroundColor1(backgroundColor2);
       setBackgroundColor2(newColor);
-
-      console.log('Confidence: ' + e.results[0][0].confidence);
     };
 
     recognition.onspeechend = () => setSyneStatus('Click to speak again.');
@@ -129,11 +131,7 @@ const Welcome = () => {
       if (e.error !== 'aborted')
         setSyneText(`Error occurred in recognition: ${e.error}.`);
     };
-
-    // Clean-up function to close voice recognition
-    return () => recognition.stop();
   }, [
-    context,
     noteRegister,
     synth,
     recognition,
@@ -142,9 +140,23 @@ const Welcome = () => {
     notes,
     colors,
     backgroundColor2,
+    setSyneHistory,
+    socket,
+    username,
   ]);
 
-  const { username, currentUsers } = context;
+  useEffect(() => {
+    setIsListening(true);
+
+    // Clean-up function to close voice recognition
+    return () => {
+      if (isListening) {
+        recognition.stop();
+        setIsListening(false);
+      }
+    };
+  }, []);
+
   const users = currentUsers.filter((user) => user.username !== username);
 
   return (

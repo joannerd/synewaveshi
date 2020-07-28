@@ -4,9 +4,9 @@ const http = require('http');
 const path = require('path');
 const morgan = require('morgan');
 const socketIO = require('socket.io');
-const { ChatHistory } = require('./util');
+const { ChatHistory } = require('./chatHistoryLinkedList');
 
-const server = http.Server(app);
+const server = http.createServer(app);
 const PORT = process.env.PORT || 80;
 server.listen(PORT, () => console.log(`Listening at port ${PORT}...`));
 
@@ -23,8 +23,6 @@ let currentUsers = [];
 let history = new ChatHistory();
 
 io.on('connection', (socket) => {
-  let newUser = false;
-
   socket.on('add note', ({ fullNote, newColor, username, message }) => {
     history.addMessage(`${message} (note: ${fullNote})`, username);
 
@@ -33,6 +31,7 @@ io.on('connection', (socket) => {
       Broadcasting new note: ${fullNote}
       History: ${history.lastMessage()}
     `);
+    
     socket.broadcast.emit('note added', {
       history: history.toArray(),
       note: fullNote,
@@ -41,12 +40,9 @@ io.on('connection', (socket) => {
   });
 
   socket.on('add user', (username) => {
-    if (newUser) return;
-
     socket.username = username;
     numUsers += 1;
     currentUsers.push({ id: numUsers, username });
-    newUser = true;
     history.addMessage(`${username} joined`, username);
 
     console.log(`
@@ -55,7 +51,7 @@ io.on('connection', (socket) => {
       History: ${history.lastMessage()}
     `);
 
-    socket.broadcast.emit('user joined', {
+    io.emit('user joined', {
       history: history.toArray(),
       username: socket.username,
       currentUsers,
@@ -64,21 +60,26 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    if (!newUser) return;
+    if (numUsers > 0) {
+      numUsers -= 1;
+      currentUsers = currentUsers.filter(
+        (user) => user.username !== socket.username
+      );
+    }
+    if (numUsers === 0) {
+      currentUsers = [];
+      history.clear();
+    } else {
+      history.addMessage(`${socket.username} disconnected`, socket.username);
+    }
 
-    numUsers -= 1;
-    console.log(`${socket.username} disconnected`);
-    currentUsers = currentUsers.filter(
-      (user) => user.username !== socket.username
-    );
-    history.addMessage(`${socket.username} disconnected`, socket.username);
-
-    socket.username = undefined;
     console.log(`
-      New user: ${socket.username}
+      Disconnected user: ${socket.username}
       Num users: ${numUsers}
       History: ${history.lastMessage()}
     `);
+
+    socket.username = undefined;
 
     socket.broadcast.emit('user left', {
       history: history.toArray(),
@@ -86,5 +87,7 @@ io.on('connection', (socket) => {
       currentUsers,
       numUsers,
     });
+
+    socket.disconnect();
   });
 });

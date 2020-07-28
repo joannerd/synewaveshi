@@ -14,24 +14,13 @@ const App = ({
 }) => {
   useEffect(() => {
     socket.on('user joined', (data) => {
-      console.log(`${data.username} joined!`);
       setCurrentUsers(data.currentUsers);
       setSyneHistory(data.history);
     });
 
     socket.on('user left', (data) => {
-      console.log('user left!');
       setCurrentUsers(data.currentUsers);
       setSyneHistory(data.history);
-    });
-
-    socket.on('disconnect', () => {
-      console.log(`user has disconnected.`);
-    });
-
-    socket.on('reconnect', () => {
-      console.log(`user has been reconnected!`);
-      if (username) socket.emit('add user', username);
     });
   }, [socket, username, setCurrentUsers, setSyneHistory]);
 
@@ -45,15 +34,28 @@ const App = ({
 };
 
 const AppWithContext = () => {
-  const socket = io(socketUrl);
+  const [socket, setSocket] = useState(null);
   const [syneHistory, setSyneHistory] = useState([]);
   const [currentUsers, setCurrentUsers] = useState([]);
   const [username, setUsername] = useState('');
+  const [isConnected, setIsConnected] = useState(false);
 
   const updateUsername = (name) => {
     setUsername(name);
     socket.emit('add user', name);
   };
+
+  useEffect(() => {
+    const newSocket = io(socketUrl);
+    setSocket(newSocket);
+    setIsConnected(true);
+    return () => {
+      if (isConnected) {
+        socket.emit('disconnect');
+        setIsConnected(false);
+      }
+    }
+  }, []);
 
   const state = {
     socket,
@@ -64,6 +66,8 @@ const AppWithContext = () => {
     setCurrentUsers,
     setSyneHistory,
   };
+
+  if (!isConnected) return <h1>Connecting...</h1>
 
   return (
     <HistoryContext.Provider value={state}>
