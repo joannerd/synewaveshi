@@ -16,6 +16,7 @@ const Welcome = () => {
   const [backgroundColor2, setBackgroundColor2] = useState('white');
   const [noteRegister, setNoteRegister] = useState(2);
   const [isListening, setIsListening] = useState(false);
+  const [isSyneBotOn, setIsSyneBotOn] = useState(false);
 
   // Set array of possible notes
   const naturalNotes = ['a', 'b', 'c', 'd', 'e', 'f', 'g'];
@@ -52,7 +53,7 @@ const Welcome = () => {
     window.navigator.permissions.query({ name: 'microphone' })
       .then(res => {
         if (res.state === 'granted') {
-          setSyneStatus('Syne is listening...');
+          setSyneStatus('Listening...');
         } else {
           recognition.stop();
           setSyneStatus('Please enable microphone access.');
@@ -81,7 +82,7 @@ const Welcome = () => {
     // Voice input listener to generate new note and change background color
     recognition.onresult = (e) => {
       const note = e.results[0][0].transcript.toLowerCase();
-      setSyneStatus('Syne is listening...');
+      setSyneStatus('Listening...');
       setSyneText(`Received input: ${note.toUpperCase()}`);
 
       const randomIdx = getRandomInt(7);
@@ -159,6 +160,17 @@ const Welcome = () => {
 
   const users = currentUsers.filter((user) => user.username !== username);
 
+  const syneBotButtonText = isSyneBotOn ? 'say bye to' : 'wave with';
+  const toggleSyneBot = () => {
+    if (isSyneBotOn) {
+      socket.emit('disconnect synebot');
+      setIsSyneBotOn(false);
+    } else {
+      socket.emit('add synebot');
+      setIsSyneBotOn(true);
+    }
+  };
+
   return (
     <div
       id="welcome"
@@ -168,8 +180,9 @@ const Welcome = () => {
       }}
     >
       <h2>Welcome, {username}!</h2>
-      <h3 id="wave">Click to begin waving.</h3>
+      <h3 id="wave">Start speaking to make sounds.</h3>
       <CurrentUsersList users={users} />
+      <button id="synebot" onClick={toggleSyneBot}>Click to {syneBotButtonText} SyneBot</button>
       <h3>Low or High</h3>
       <h4>Current selected note register: {noteRegister}</h4>
       <input
