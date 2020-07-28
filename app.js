@@ -32,7 +32,7 @@ io.on('connection', (socket) => {
       History: ${history.lastMessage()}
     `);
     
-    socket.broadcast.emit('note added', {
+    io.emit('note added', {
       history: history.toArray(),
       note: fullNote,
       color: newColor,
