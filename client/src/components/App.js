@@ -55,6 +55,7 @@ const AppWithContext = () => {
         setIsConnected(false);
       }
     }
+    // eslint-disable-next-line
   }, []);
 
   const state = {
