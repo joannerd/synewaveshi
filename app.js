@@ -21,7 +21,6 @@ const io = socketIO(server);
 let numUsers = 0;
 let currentUsers = [];
 let history = new ChatHistory();
-let isSyneBotOn = false;
 
 io.on('connection', (socket) => {
   socket.on('add note', ({ fullNote, newColor, username, message }) => {
@@ -57,46 +56,6 @@ io.on('connection', (socket) => {
       username: socket.username,
       currentUsers,
       numUsers,
-    });
-  });
-
-  socket.on('add synebot', () => {
-    isSyneBotOn = true;
-    const username = 'SyneBot';
-    numUsers += 1;
-    currentUsers.push({ id: numUsers, username });
-    history.addMessage(`${username} joined`, username);
-
-    console.log(`
-      New user: ${username}
-      Num users: ${numUsers}
-      History: ${history.lastMessage()}
-    `);
-
-    io.emit('user joined', {
-      history: history.toArray(),
-      username: socket.username,
-      currentUsers,
-      numUsers,
-    });
-  });
-
-  socket.on('disconnect synebot', () => {
-    numUsers -= 1;
-    currentUsers = currentUsers.filter(
-      (user) => user.username !== 'SyneBot'
-    );
-    history.addMessage('SyneBot disconnected', 'SyneBot');
-
-    console.log(`
-      Disconnected user: SyneBot
-      Num users: ${numUsers}
-      History: ${history.lastMessage()}
-    `);
-
-    io.emit('user left', {
-      history: history.toArray(),
-      currentUsers,
     });
   });
 

@@ -40,7 +40,7 @@ const Welcome = ({
 
     // Web socket listener for new remotely added note
     socket.on('note added', (data) => {
-      synth.triggerAttackRelease(data.note, '3');
+      synth.triggerAttackRelease(data.note, '8n');
       setSyneHistory(data.history);
       setBackgroundColor2(data.color);
     });
@@ -84,7 +84,7 @@ const Welcome = ({
         message: note,
       });
 
-      synth.triggerAttackRelease(fullNote, '3');
+      synth.triggerAttackRelease(fullNote, '8n');
       setBackgroundColor1(backgroundColor2);
       setBackgroundColor2(newColor);
     };
@@ -124,29 +124,19 @@ const Welcome = ({
   const toggleSyneBot = () => {
     if (isSyneBotOn) {
       clearInterval(syneBotInterval);
-      socket.emit('disconnect synebot');
-      setIsSyneBotOn(false);
     } else {
-      socket.emit('add synebot');
+      let idx = 2;
       setSyneBotInterval(setInterval(() => {
-        const randomIdx = getRandomInt(7);
-        let noteToPlay = naturalNotes[randomIdx];
-        let newColor = colors[noteToPlay];
-
-        const fullNote = noteToPlay + noteRegister;
-        socket.emit('add note', {
-          fullNote,
-          newColor,
-          username: 'SyneBot',
-          message: noteToPlay,
-        });
-
-        synth.triggerAttackRelease(fullNote, '3');
-        setBackgroundColor1(backgroundColor2);
-        setBackgroundColor2(newColor);
-      }, 3000))
-      setIsSyneBotOn(true);
+        const fullNote = naturalNotes[idx] + 1;
+        synth.triggerAttackRelease(fullNote, '8n');
+        if (idx === 6) {
+          idx = 2;
+        } else {
+          idx += 2;
+        }
+      }, 1000))
     }
+    setIsSyneBotOn(isSyneBotOn => !isSyneBotOn);
   };
 
   return (
