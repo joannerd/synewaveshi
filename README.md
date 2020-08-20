@@ -1,3 +1,3 @@
 # Synewaveshi
 
-![synewaveshi](https://user-images.githubusercontent.com/32081352/84980536-32891500-b0e7-11ea-9b97-48fc033509cd.gif)
+![synewaveshi](https://user-images.githubusercontent.com/32081352/90709078-3bfe3d00-e250-11ea-869c-5ee7a321bbae.gif)
